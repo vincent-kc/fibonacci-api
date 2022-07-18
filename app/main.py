@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
@@ -17,18 +15,22 @@ def get_db():
         db.close()
 
 
-async def create_fibonacci(n: int, rec_id: int):
-    await asyncio.sleep(3)  # simulate processing
+def compute_fibonacci(n: int) -> int:
+    n1, n2 = 0, 1
+    nth = 0
+
+    for i in range(n - 1):
+        n1 = n2
+        n2 = nth
+        nth = n1 + n2
+    return nth
+
+
+def create_fibonacci(n: int, rec_id: int):
     db: Session = SessionLocal()
     try:
         fib_rec = db.get(models.Fibonacci, rec_id)
-
-        n1, n2 = 0, 1
-        nth = 0
-        for i in range(n - 1):
-            n1 = n2
-            n2 = nth
-            nth = n1 + n2
+        nth = compute_fibonacci(n)
         fib_rec.nth = nth
         fib_rec.status = models.Status.success.value
         db.add(fib_rec)
@@ -40,7 +42,7 @@ async def create_fibonacci(n: int, rec_id: int):
         print("CREATED FIBONACCI!")
 
 
-@app.post("/fibonacci", response_model=schemas.FibOutput, status_code=201)
+@app.post("/fibonacci", response_model=schemas.FibOutput, status_code=200)
 async def fibonacci(
     fib: schemas.FibInput, bg_task: BackgroundTasks, db: Session = Depends(get_db)
 ):
