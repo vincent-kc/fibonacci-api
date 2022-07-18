@@ -1,0 +1,8 @@
+venv
+.mypy_cache
+.pytest_cache
+mypy.ini
+format_and_check.sh
+.gitignore
+.flake8
+.git
